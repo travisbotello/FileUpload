@@ -1,11 +1,9 @@
 <?php
-
 /**
  * FileUpload
  *
  * @author Michel van de Wetering
- * @author Bob Ray <https://bobsguides.com>
- * @Copyright 2015-2017 Bob Ray <https://bobsguides.com>
+ * @author Bob Ray <http://bobsguides.com>
  * 3/15/11
  *
  * FileUpload is free software; you can redistribute it and/or modify it
@@ -24,7 +22,7 @@
  * @package fileupload
  */
 /**
- * MODX FileUpload Snippet
+ * MODx FileUpload Snippet
  *
  * Description: Allows upload of multiple files
  *
@@ -35,7 +33,7 @@
 /*
 
  * Original snippet by Michel van de Wetering
- * Refactored for MODX Revolution by Bob Ray
+ * Refactored for MODx Revolution by Bob Ray
  *
  * targetfile property and Dutch translation contributed by Jeroen Hegeman
  *
@@ -84,6 +82,8 @@
  * @property allowoverwrite (boolean) - Set to `1` to allow overwriting existing files.
  *
  * @property targetfile (string) - Name of the target file for the upload; default: ''
+ * 
+ * @property mediasource (int) - ID of the media source that should be used; default: null 
  */
 
 /* Setup the defaults */
@@ -135,6 +135,8 @@ $filefields = $filefields == 0 ? 5 : $filefields;
 
 
 $allowoverwrite = $modx->getOption('allowoverwrite', $sp, '');
+
+$mediaSource = (int) $modx->getOption('mediasource', $sp, null);
 
 // Function taken from php.net
 if (!function_exists('RecursiveMkdir')) {
@@ -324,11 +326,17 @@ if (isset($_FILES['userfile']) && $_POST['formid'] == $hash) {
 
     }
 
+    
+    // Get media source, with fallback to default
+    $modx->loadClass('sources.modMediaSource');
+    $source = modMediaSource::getDefaultSource($modx, $mediaSource);
+
     // Invoke OnFileManagerUpload Event
     $info = array(
         'files' => $fileArray,
         'directory' => $path,
         'fromfileupload' => true,
+        'source' => $source
     );
 
     $modx->invokeEvent('OnFileManagerUpload', $info);
